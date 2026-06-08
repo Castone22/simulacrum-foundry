@@ -365,7 +365,10 @@ export class SimulacrumSidebarTab extends HandlebarsApplicationMixin(AbstractSid
 
     // SECURITY: Defensive check - GM-only access
     if (!game.user?.isGM) {
-      return foundry.utils.mergeObject(context, {
+      // Use Object.assign rather than foundry.utils.mergeObject — the latter
+      // recursively walks nested objects, and in v14 a User document's `_id`
+      // is a read-only property which makes the deep merge throw.
+      return Object.assign(context, {
         messages: [],
         welcomeMessage: null,
         isGM: false,
@@ -398,7 +401,9 @@ export class SimulacrumSidebarTab extends HandlebarsApplicationMixin(AbstractSid
       );
     }
 
-    return foundry.utils.mergeObject(context, {
+    // Object.assign instead of mergeObject — see note above the GM-deny branch.
+    // mergeObject walks game.user's properties and trips on read-only `_id` in v14.
+    return Object.assign(context, {
       messages: this.messages,
       isGM: game.user.isGM,
       user: game.user,
